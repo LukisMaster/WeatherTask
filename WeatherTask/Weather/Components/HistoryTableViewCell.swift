@@ -1,15 +1,25 @@
 //
-//  HistoryCell.swift
-//  weatherTask
+//  HistoryTableViewCell.swift
+//  WeatherTask
 //
 //  Created by Sergey Nestroyniy on 18.02.2023.
 //
 
 import UIKit
 
-class HistoryCell: UITableViewCell {
+
+protocol CellModelRepresentable {
+    var viewModel: CellIdentifiable? { get set }
+}
+
+class HistoryTableViewCell: UITableViewCell, CellModelRepresentable  {
+    var viewModel: CellIdentifiable? {
+        didSet {
+            configure()
+        }
+    }
     
-    private lazy var sityLabel: UILabel = {
+    private lazy var сityLabel: UILabel = {
         let label = UILabel()
         label.font = .helveticaNeueLight(25)
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -40,47 +50,48 @@ class HistoryCell: UITableViewCell {
         setupUI()
     }
     
-    func configure(model: HistoryModel) {
-        setupDataSity(name: model.city)
-        setupDataTemp(temp: model.temp, unit: model.unit)
-        setupDataDate(date: model.date)
+    func configure() {
+        guard let cellViewModel = viewModel as? HistoryCellViewModel else { return }
+        setupDataCity(name: cellViewModel.city)
+        setupDataTemp(temp: cellViewModel.temp, unit: cellViewModel.unit)
+        setupDataDate(date: cellViewModel.date)
     }
 
 }
 
-// MARK: - private HistoryCell
+// MARK: - private HistoryTableViewCell
 
-private extension HistoryCell {
+private extension HistoryTableViewCell {
     func setupUI() {
-        contentView.subviews(sityLabel,
+        contentView.subviews(сityLabel,
                              tempLabel,
                              dateLabel)
                 
         NSLayoutConstraint.activate([
-            sityLabel.topAnchor.constraint(equalTo: topAnchor, constant: 10),
-            sityLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: Constants.inset),
+            сityLabel.topAnchor.constraint(equalTo: topAnchor, constant: 10),
+            сityLabel.leftAnchor.constraint(equalTo: leftAnchor, constant: Constants.inset),
             
-            tempLabel.centerYAnchor.constraint(equalTo: sityLabel.centerYAnchor),
-            tempLabel.leftAnchor.constraint(equalTo: sityLabel.rightAnchor),
+            tempLabel.centerYAnchor.constraint(equalTo: сityLabel.centerYAnchor),
+            tempLabel.leftAnchor.constraint(equalTo: сityLabel.rightAnchor),
 
             dateLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-            dateLabel.leftAnchor.constraint(equalTo: sityLabel.leftAnchor)
+            dateLabel.leftAnchor.constraint(equalTo: сityLabel.leftAnchor)
         ])
     }
     
-    func setupDataSity(name: String) {
-        sityLabel.text = name
+    func setupDataCity(name: String) {
+        сityLabel.text = name
     }
     
     func setupDataTemp(temp: String, unit: ForTemp) {
         switch unit {
-        case .celcius: tempLabel.text = ", " + temp + "° C"
+        case .celcius: tempLabel.text = temp + "° C"
         case .fahrenheit: tempLabel.text = temp + "° F"
         }
     }
     
     func setupDataDate(date: Date?) {
-        guard let date else { return }
+        guard let date = date else { return }
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd.mm.yyyy hh:mm:ss"
         let dateDecod = dateFormatter.string(from: date)
@@ -91,7 +102,7 @@ private extension HistoryCell {
 
 // MARK: - private enum
 
-private extension HistoryCell {
+private extension HistoryTableViewCell {
     enum Constants {
         static let inset: CGFloat = 20
     }

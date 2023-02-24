@@ -1,18 +1,33 @@
 //
 //  InfoView.swift
-//  weatherTask
+//  WeatherTask
 //
 //  Created by Sergey Nestroyniy on 18.02.2023.
 //
 
 import UIKit
 
+protocol InfoViewDelegate: AnyObject {
+    //in
+    func updateData(viewModel: InfoViewModel)
+    
+    //out
+    func switchValueChanged(temperatureStandardSwitchIsOn: Bool)
+}
 
 class InfoView: UIView {
     
-    lazy var sityLabel: UILabel = {
+    weak var delegate: InfoViewDelegate?
+    
+    private var viewModel: InfoViewModel? {
+        didSet {
+            configure()
+        }
+    }
+    
+    lazy var cityLabel: UILabel = {
         let label = UILabel()
-        label.text = "Your Sity"
+        label.text = "Your City"
         label.font = .helveticaNeueLight(40)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -51,11 +66,11 @@ class InfoView: UIView {
     }()
     
     private lazy var tempSwitch: UISwitch = {
-        let obj = UISwitch()
-        obj.translatesAutoresizingMaskIntoConstraints = false
-        obj.addTarget(self, action: #selector(didTapSwitch), for: .touchUpInside)
-        obj.onTintColor = .clear
-        return obj
+        let tempSwitch = UISwitch()
+        tempSwitch.translatesAutoresizingMaskIntoConstraints = false
+        tempSwitch.addTarget(self, action: #selector(didTapSwitch), for: .touchUpInside)
+        tempSwitch.onTintColor = .clear
+        return tempSwitch
     }()
     
     override init(frame: CGRect) {
@@ -74,12 +89,7 @@ class InfoView: UIView {
 
 private extension InfoView {
     func setupUI() {
-        backgroundColor = UIColor(hex: "#5ac8fa") // light blue
-        backgroundColor = UIColor(hex: "#FFD580") // light orange
-        backgroundColor = UIColor(hex: "#FF6666") // light red
-        
-        
-        subviews(sityLabel,
+        subviews(cityLabel,
                  tempLabel,
                  celciusLabel,
                  fahrenheitLabel,
@@ -87,11 +97,11 @@ private extension InfoView {
                  degreeLabel)
         
         NSLayoutConstraint.activate([
-            sityLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: Constants.sityLabelTopIndent),
-            sityLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: Constants.sityLabelLeftIndent),
+            cityLabel.topAnchor.constraint(equalTo: self.topAnchor, constant: Constants.сityLabelTopIndent),
+            cityLabel.leftAnchor.constraint(equalTo: self.leftAnchor, constant: Constants.сityLabelLeftIndent),
         
             tempLabel.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: Constants.tempLabelBottomIndent),
-            tempLabel.leftAnchor.constraint(equalTo: sityLabel.leftAnchor),
+            tempLabel.leftAnchor.constraint(equalTo: cityLabel.leftAnchor),
             
             degreeLabel.centerYAnchor.constraint(equalTo: tempLabel.centerYAnchor),
             degreeLabel.leftAnchor.constraint(equalTo: tempLabel.rightAnchor),
@@ -107,6 +117,13 @@ private extension InfoView {
         ])
         
     }
+    
+    func configure() {
+        cityLabel.text = viewModel?.city ?? "Your City"
+        tempLabel.text = viewModel?.temp ?? "95"
+        tempSwitch.isOn = viewModel?.celciusIsOn ?? false
+        backgroundColor = UIColor(hex: viewModel?.backgroundHexColor ?? BackgroundHexColor.lightBlue.rawValue)
+    }
 }
 
 // MARK: - @objc private InfoView
@@ -114,27 +131,7 @@ private extension InfoView {
 @objc
 private extension InfoView {
     func didTapSwitch() {
-        if tempSwitch.isOn {
-            convertTempToCelcius()
-        } else {
-            convertTempToFahrenheit()
-        }
-    }
-    
-    func convertTempToCelcius() {
-        // (°C × 9/5) + 32 = °F
-        guard let actualTemp = tempLabel.text else { return }
-        guard let actualTemp = Int(actualTemp) else { return }
-        let newTemp = (actualTemp - 32) * 5 / 9
-        tempLabel.text = String(newTemp)
-    }
-    
-    func convertTempToFahrenheit() {
-        // (°C × 9/5) + 32 = °F
-        guard let actualTemp = tempLabel.text else { return }
-        guard let actualTemp = Int(actualTemp) else { return }
-        let newTemp = (actualTemp * 9 / 5) + 32
-        tempLabel.text = String(newTemp)
+        delegate?.switchValueChanged(temperatureStandardSwitchIsOn: tempSwitch.isOn)
     }
 }
 
@@ -143,10 +140,10 @@ private extension InfoView {
 
 private extension InfoView {
     enum Constants {
-        static let sityLabelLeftIndent: CGFloat = UIScreen.main.bounds.width / 15
-        static let sityLabelTopIndent: CGFloat =  UIScreen.main.bounds.width / 20
-        static let tempLabelBottomIndent: CGFloat =  -sityLabelTopIndent * 2
-        static let celciusLabelRightIndent: CGFloat =  -sityLabelLeftIndent
-        static let itemInset: CGFloat =  -sityLabelLeftIndent / 2
+        static let сityLabelLeftIndent: CGFloat = UIScreen.main.bounds.width / 15
+        static let сityLabelTopIndent: CGFloat =  UIScreen.main.bounds.width / 20
+        static let tempLabelBottomIndent: CGFloat =  -сityLabelTopIndent * 2
+        static let celciusLabelRightIndent: CGFloat =  -сityLabelLeftIndent
+        static let itemInset: CGFloat =  -сityLabelLeftIndent / 2
     }
 }

@@ -1,6 +1,6 @@
 //
 //  SceneDelegate.swift
-//  weatherTask
+//  WeatherTask
 //
 //  Created by Sergey Nestroyniy on 18.02.2023.
 //
@@ -16,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         window = UIWindow(windowScene: windowScene)
-        let viewController = MainBuilder.create()
+        let viewController = WeatherBuilder.create()
         let navigation = UINavigationController(rootViewController: viewController)
         window?.rootViewController = navigation
         window?.makeKeyAndVisible()

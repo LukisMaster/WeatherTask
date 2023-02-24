@@ -1,6 +1,6 @@
 //
-//  MainViewController.swift
-//  weatherTask
+//  WeatherViewController.swift
+//  WeatherTask
 //
 //  Created by Sergey Nestroyniy on 18.02.2023.
 //
@@ -8,19 +8,26 @@
 import UIKit
 import Foundation
 
-protocol MainViewControllerProtocol: AnyObject {
-    
+
+
+protocol WeatherViewInputProtocol: AnyObject {
+    // from presenter to view
+    func reloadHistory(for: SectionRowPresentable)
 }
 
-final class MainViewController: ViewController {
-    
-    var presenter: MainPresenterProtocol?
-    private var timer: Timer?
-    private var historyModel = [
-        HistoryModel(date: nil, city: "SPB", temp: "0", unit: .celcius),
-        HistoryModel(date: nil, city: "Irkutsk", temp: "-30", unit: .celcius)
-    ]
+protocol WeatherViewOutputProtocol: PresenterProtocol {
+    // from view to presenter
+    func didTapCell(with cellViewModel: HistoryCellViewModel)
+    func didLocationButtonPressed()
+    func didTemperatureStandardToggleSwitched(isEnable: Bool)
+    func didSearchBarButtonPressed(text: String)
+}
 
+final class WeatherViewController: ViewController {
+    
+    var presenter: WeatherViewOutputProtocol!
+    private var section: SectionRowPresentable = HistorySectionViewModel()
+    private var timer: Timer?
     
     private lazy var infoView: InfoView = {
         let view = InfoView()
@@ -31,8 +38,8 @@ final class MainViewController: ViewController {
     private lazy var historyTable: UITableView = {
         let table = UITableView()
         table.subscribe(self)
-        table.register(HistoryCell.self, forCellReuseIdentifier: "HistoryCell")
-        table.rowHeight = Constants.rowHeight
+        table.register(HistoryTableViewCell.self, forCellReuseIdentifier: WeatherConstants.cellReuseIdentifier)
+        table.rowHeight = WeatherConstants.rowHeight
         table.translatesAutoresizingMaskIntoConstraints = false
         return table
     }()
@@ -47,16 +54,16 @@ final class MainViewController: ViewController {
     
 }
 
-// MARK: - MainViewControllerProtocol
-
-extension MainViewController: MainViewControllerProtocol {
-    
+// MARK: - WeatherViewInputProtocol
+extension WeatherViewController: WeatherViewInputProtocol {
+    func reloadHistory(for: SectionRowPresentable) {
+        //
+    }
 }
 
 
-// MARK: - private MainViewController
-
-private extension MainViewController {
+// MARK: - private WeatherViewController
+private extension WeatherViewController {
     
     func setupUI() {
         view.subviews(infoView, historyTable)
@@ -95,35 +102,43 @@ private extension MainViewController {
     func setupSearchBar() {
         let searchController = UISearchController()
         navigationItem.searchController = searchController
-        searchController.searchBar.placeholder = "Sity name"
+        searchController.searchBar.placeholder = "Сity name"
         searchController.searchBar.delegate = self
     }
     
 }
 
-
-extension MainViewController: UITableViewDelegate, UITableViewDataSource {
+// MARK: - UITableViewDataSource
+extension WeatherViewController: UITableViewDataSource {
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return historyModel.count
+        self.section.rows.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = historyTable.dequeueReusableCell(withIdentifier: "HistoryCell", for: indexPath) as! HistoryCell
-        guard let model = historyModel[safe: indexPath.item] else {
+        guard let viewModel = section.rows[safe: indexPath.item] else {
             return UITableViewCell()
         }
-        print(model)
-        cell.configure(model: model)
+        let cell = historyTable.dequeueReusableCell(withIdentifier: viewModel.cellIdentifier, for: indexPath) as! HistoryTableViewCell
+        cell.viewModel = viewModel
         return cell
     }
+}
+
+// MARK: - UITableViewDelegate
+extension WeatherViewController: UITableViewDelegate {
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        guard let cellViewModel = section.rows[indexPath.row] as? HistoryCellViewModel else { return }
+        presenter.didTapCell(with: cellViewModel)
+    }
     
 }
 
 
 // MARK: - UISearchBarDelegate
-
-extension MainViewController: UISearchBarDelegate {
+extension WeatherViewController: UISearchBarDelegate {
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         timer?.invalidate()
@@ -134,11 +149,22 @@ extension MainViewController: UISearchBarDelegate {
     }
 }
 
+// MARK: - InfoViewDelegate
+extension WeatherViewController: InfoViewDelegate {
+    func updateData(viewModel: InfoViewModel) {
+        //
+    }
+    
+    func switchValueChanged(temperatureStandardSwitchIsOn: Bool) {
+        presenter.didTemperatureStandardToggleSwitched(isEnable: temperatureStandardSwitchIsOn)
+    }
+}
+
 
 // MARK: - private enum
-
-private extension MainViewController {
-    enum Constants {
+private extension WeatherViewController {
+    enum WeatherConstants {
         static let rowHeight: CGFloat = 80
+        static let cellReuseIdentifier: String = "HistoryCell"
     }
 }
