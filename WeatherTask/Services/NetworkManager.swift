@@ -67,7 +67,8 @@ final class NetworkManager: NetworkFetchWeather {
                 return
             }
             do {
-                let response = try JSONDecoder().decode(CityResponse.self, from: data)
+                let responseArray = try JSONDecoder().decode([CityResponse].self, from: data)
+                guard let response = responseArray.first else { return }
                 completion(.success(response))
             } catch {
                 completion(.failure(error))

@@ -21,7 +21,7 @@ protocol WeatherViewOutputProtocol: PresenterProtocol {
     func didTapCell(with cellViewModel: HistoryCellViewModel)
     func didLocationButtonPressed()
     func didTemperatureStandardToggleSwitched(isEnable: Bool)
-    func didSearchBarButtonPressed(text: String)
+    func didSearchBarTextChanged(text: String)
 }
 
 final class WeatherViewController: ViewController {
@@ -157,9 +157,8 @@ extension WeatherViewController: UISearchBarDelegate {
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false, block: { _ in
-            print(searchText) // отправять все в презентер через делегат
-                              // в презентере вся логика с нетворк сервисом
+        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false, block: { [self] _ in
+            presenter.didSearchBarTextChanged(text: searchText)
         })
     }
 }

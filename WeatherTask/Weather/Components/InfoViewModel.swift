@@ -29,7 +29,7 @@ final class InfoViewModel {
         }
 }
 
- // MARK: - fileprivate funcs
+ // MARK: - fileprivate funcs for inits
 fileprivate func celsiusConvertToFahrenheit(_ celsius: Int) -> Int {
     (celsius * 9 / 5) + 32
 }

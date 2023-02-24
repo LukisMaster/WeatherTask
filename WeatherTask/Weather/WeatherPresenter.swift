@@ -33,7 +33,7 @@ extension WeatherPresenter: WeatherViewOutputProtocol {
         interactor.changeTemperatureStandard(value: isEnable ? TempStandard.celsius : TempStandard.fahrenheit)
     }
     
-    func didSearchBarButtonPressed(text: String) {
+    func didSearchBarTextChanged(text: String) {
         interactor.fetchWeather(by: text)
     }
     

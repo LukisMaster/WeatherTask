@@ -42,22 +42,7 @@ extension WeatherInteractor: WeatherInteractorInputProtocol {
         guard let coordinate = LocationManager.shared.location?.coordinate else {
             fatalError("In WeatherInteractor. Can't get location coordinates") // тут можно заменить на обработчик ошибки
         }
-        print(coordinate)
-        networkService.fetchWeatherData(latitude: coordinate.latitude, longitude: coordinate.longitude) { [weak self] result in
-            switch result {
-            case .failure(let error):
-                self?.presenter.fetchingFail(with: error) // отправить алерт, либо ничего не делать
-            case .success(let weatherResponse):
-                print(weatherResponse)
-                print(Int16(weatherResponse.main?.temp ?? 0.0))
-
-                self?.currentTemperatureCelsius = Int16(weatherResponse.main?.temp ?? 0.0)
-                self?.presenter.weatherIsFetched(
-                    weather: weatherResponse,
-                    currentTemperatureStandard: self?.temperatureStandard ?? .celsius
-                )
-            }
-        }
+        fetchWeatherBy(latitude: coordinate.latitude, longitude: coordinate.longitude)
     }
     
     
@@ -70,18 +55,7 @@ extension WeatherInteractor: WeatherInteractorInputProtocol {
                  guard let lat = cityResponse.lat, let lon = cityResponse.lon else {
                      fatalError("In WeatherInteractor. Not corrected city latitude or longitude ") // тут можно заменить на обработчик ошибки
                  }
-                 self?.networkService.fetchWeatherData(latitude: lat, longitude: lon) { result in
-                     switch result {
-                     case .failure(let error):
-                         self?.presenter.fetchingFail(with: error) // отправить алерт, либо ничего не делать
-                     case .success(let weatherResponse):
-                         print(weatherResponse)
-                         self?.presenter.weatherIsFetched(
-                             weather: weatherResponse,
-                             currentTemperatureStandard: self?.temperatureStandard ?? .celsius
-                         )
-                     }
-                 }
+                 self?.fetchWeatherBy(latitude: lat, longitude: lon)
              }
          }
      }
@@ -98,10 +72,21 @@ extension WeatherInteractor: WeatherInteractorInputProtocol {
 }
 
 
-// MARK: - Private
+// MARK: - Private funcs
 
 private extension WeatherInteractor {
-    func handleError(_ error: Error) {
-        // Обработка ошибки
+    func fetchWeatherBy(latitude: Double, longitude: Double) {
+        self.networkService.fetchWeatherData(latitude: latitude, longitude: longitude) { [weak self] result in
+            switch result {
+            case .failure(let error):
+                self?.presenter.fetchingFail(with: error) // отправить алерт, либо ничего не делать
+            case .success(let weatherResponse):
+                self?.currentTemperatureCelsius = Int16(weatherResponse.main?.temp ?? 0.0)
+                self?.presenter.weatherIsFetched(
+                    weather: weatherResponse,
+                    currentTemperatureStandard: self?.temperatureStandard ?? TempStandard.celsius
+                )
+            }
+        }
     }
 }
