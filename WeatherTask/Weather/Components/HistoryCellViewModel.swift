@@ -23,7 +23,7 @@ final class HistoryCellViewModel : CellIdentifiable {
     let date: Date?
     let city: String
     let temp: String
-    let unit: ForTemp
+    let unit: TempStandard
     
     init(model: WeatherInfoModel) {
         date = model.date

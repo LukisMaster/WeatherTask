@@ -11,19 +11,16 @@ import CoreLocation
 
 protocol WeatherInteractorInputProtocol: AnyObject {
     func fetchWeatherByLocation()
-    func fetchCoordinates(by city: String)
+    func fetchWeather(by city: String)
     func fetchSearchHistory()
+    func changeTemperatureStandard(value: TempStandard)
 }
 
 protocol WeatherInteractorOutputProtocol: AnyObject {
-    func coordinatesAreFetched(coordinates: CityResponse)
-    func weatherIsFetched(weather: WeatherResponse)
+    func weatherIsFetched(weather: WeatherResponse, currentTemperatureStandard: TempStandard)
     func fetchingFail(with error: Error)
     func historyIsFetched(history: [Weather])
-    
-//    func receiveWeatherData(weatherData: WeatherHistoryData)
-//    func presentWeather(response: WeatherResponse)
-//    func presentError(_ error: Error)
+    func temperatureStandardDidSet(with value: TempStandard, currentTemperatureCelsius: Int16)
 }
 
 final class WeatherInteractor {
@@ -31,43 +28,60 @@ final class WeatherInteractor {
     private let dataService = CoreDataManager.shared
     private let locationService = LocationManager.shared
     
+    private var temperatureStandard : TempStandard = .celsius
+    private var currentTemperatureCelsius : Int16 = 0
+    
     weak var presenter: WeatherInteractorOutputProtocol!
 }
 
 // MARK: - WeatherInteractorInputProtocol
 
 extension WeatherInteractor: WeatherInteractorInputProtocol {
+
     func fetchWeatherByLocation() {
-        guard let coordinate = LocationManager.shared.location?.coordinate else {return}
+        guard let coordinate = LocationManager.shared.location?.coordinate else {
+            fatalError("In WeatherInteractor. Can't get location coordinates") // тут можно заменить на обработчик ошибки
+        }
+        print(coordinate)
         networkService.fetchWeatherData(latitude: coordinate.latitude, longitude: coordinate.longitude) { [weak self] result in
             switch result {
             case .failure(let error):
                 self?.presenter.fetchingFail(with: error) // отправить алерт, либо ничего не делать
             case .success(let weatherResponse):
-                self?.presenter.weatherIsFetched(weather: weatherResponse)
+                print(weatherResponse)
+                print(Int16(weatherResponse.main?.temp ?? 0.0))
+
+                self?.currentTemperatureCelsius = Int16(weatherResponse.main?.temp ?? 0.0)
+                self?.presenter.weatherIsFetched(
+                    weather: weatherResponse,
+                    currentTemperatureStandard: self?.temperatureStandard ?? .celsius
+                )
             }
         }
     }
     
     
-    func fetchCoordinates(by city: String) {
+    func fetchWeather(by city: String) {
          networkService.fetchCoordinatesData(city: city) { [weak self] result in
              switch result {
              case .failure(let error):
                  self?.presenter.fetchingFail(with: error) // отправить алерт, либо ничего не делать
              case .success(let cityResponse):
                  guard let lat = cityResponse.lat, let lon = cityResponse.lon else {
-                     fatalError() // тут можно заменить на обработчик ошибки
+                     fatalError("In WeatherInteractor. Not corrected city latitude or longitude ") // тут можно заменить на обработчик ошибки
                  }
                  self?.networkService.fetchWeatherData(latitude: lat, longitude: lon) { result in
                      switch result {
                      case .failure(let error):
                          self?.presenter.fetchingFail(with: error) // отправить алерт, либо ничего не делать
                      case .success(let weatherResponse):
-                         self?.presenter.weatherIsFetched(weather: weatherResponse)
+                         print(weatherResponse)
+                         self?.presenter.weatherIsFetched(
+                             weather: weatherResponse,
+                             currentTemperatureStandard: self?.temperatureStandard ?? .celsius
+                         )
                      }
                  }
-                 self?.presenter.coordinatesAreFetched(coordinates: cityResponse)
              }
          }
      }
@@ -75,6 +89,11 @@ extension WeatherInteractor: WeatherInteractorInputProtocol {
     func fetchSearchHistory() {
         let history = dataService.fetchWeatherData()
         presenter.historyIsFetched(history: history)
+    }
+    
+    func changeTemperatureStandard(value: TempStandard) {
+        temperatureStandard = value
+        presenter.temperatureStandardDidSet(with: temperatureStandard, currentTemperatureCelsius: currentTemperatureCelsius)
     }
 }
 

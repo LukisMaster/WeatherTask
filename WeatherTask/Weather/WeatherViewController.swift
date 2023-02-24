@@ -13,6 +13,7 @@ import Foundation
 protocol WeatherViewInputProtocol: AnyObject {
     // from presenter to view
     func reloadHistory(for: SectionRowPresentable)
+    func updateInfoViewWith(city: String, tempCelsius: Int, celsiusIsOn: Bool)
 }
 
 protocol WeatherViewOutputProtocol: PresenterProtocol {
@@ -31,6 +32,7 @@ final class WeatherViewController: ViewController {
     
     private lazy var infoView: InfoView = {
         let view = InfoView()
+        view.delegate = self
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -51,11 +53,14 @@ final class WeatherViewController: ViewController {
         setupUI()
     }
     
-    
 }
 
 // MARK: - WeatherViewInputProtocol
 extension WeatherViewController: WeatherViewInputProtocol {
+    func updateInfoViewWith(city: String, tempCelsius: Int, celsiusIsOn: Bool) {
+        infoView.update(from: InfoViewModel(city: city, tempCelsius: tempCelsius, celsiusIsOn: celsiusIsOn))
+    }
+    
     func reloadHistory(for: SectionRowPresentable) {
         //
     }
@@ -93,6 +98,7 @@ private extension WeatherViewController {
     
     func setupGeoRightButton() {
         let geoButton = UIButton()
+        geoButton.addTarget(self, action: #selector(didTapGeoButton), for: .touchUpInside)
         let geoImage = UIImage(named: "geo")
         geoButton.setImage(geoImage, for: .normal)
         let geoButtonItem = UIBarButtonItem(customView: geoButton)
@@ -106,6 +112,15 @@ private extension WeatherViewController {
         searchController.searchBar.delegate = self
     }
     
+}
+
+// MARK: - @objc private WeatherViewController
+
+@objc
+private extension WeatherViewController {
+    func didTapGeoButton() {
+        presenter.didLocationButtonPressed()
+    }
 }
 
 // MARK: - UITableViewDataSource

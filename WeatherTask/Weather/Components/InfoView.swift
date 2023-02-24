@@ -8,10 +8,6 @@
 import UIKit
 
 protocol InfoViewDelegate: AnyObject {
-    //in
-    func updateData(viewModel: InfoViewModel)
-    
-    //out
     func switchValueChanged(temperatureStandardSwitchIsOn: Bool)
 }
 
@@ -25,6 +21,7 @@ class InfoView: UIView {
         }
     }
     
+    // MARK: - UIKit
     lazy var cityLabel: UILabel = {
         let label = UILabel()
         label.text = "Your City"
@@ -35,7 +32,7 @@ class InfoView: UIView {
     
     lazy var tempLabel: UILabel = {
         let label = UILabel()
-        label.text = "95"
+        label.text = "0"
         label.font = .helveticaNeueLight(25)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -73,6 +70,7 @@ class InfoView: UIView {
         return tempSwitch
     }()
     
+    // MARK: - inits
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -80,6 +78,11 @@ class InfoView: UIView {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: -  funcs
+    func update(from viewModel: InfoViewModel) {
+        self.viewModel = viewModel
     }
     
 }
@@ -119,10 +122,20 @@ private extension InfoView {
     }
     
     func configure() {
-        cityLabel.text = viewModel?.city ?? "Your City"
-        tempLabel.text = viewModel?.temp ?? "95"
-        tempSwitch.isOn = viewModel?.celciusIsOn ?? false
-        backgroundColor = UIColor(hex: viewModel?.backgroundHexColor ?? BackgroundHexColor.lightBlue.rawValue)
+        DispatchQueue.main.async { [self] in
+            if let viewModel = viewModel {
+                !viewModel.city.isEmpty ? cityLabel.text = viewModel.city : nil
+                !viewModel.temp.isEmpty ? tempLabel.text = viewModel.temp : nil
+                tempSwitch.isOn = viewModel.celsiusIsOn
+                backgroundColor = UIColor(hex: viewModel.backgroundHexColor)
+            } else {
+                cityLabel.text = "Your City"
+                tempLabel.text = "95"
+                tempSwitch.isOn = false
+                backgroundColor = UIColor(hex: BackgroundHexColor.lightBlue.rawValue)
+            }
+        }
+
     }
 }
 

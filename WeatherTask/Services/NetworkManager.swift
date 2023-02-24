@@ -78,7 +78,7 @@ final class NetworkManager: NetworkFetchWeather {
 
 // MARK: - Constant
     enum Constant {
-        static let apiKey = "YOUR_API_KEY_HERE"
+        static let apiKey = "ef95602d2ba7d17130c621d1a8b0d942"
         static let URLStringForFetchWeather = "https://api.openweathermap.org/data/2.5/weather?"
         static let URLStringForFetchCity = "https://api.openweathermap.org/geo/1.0/direct?"
         static let units = "metric"    // Celsius

@@ -11,11 +11,11 @@ struct WeatherInfoModel {
     let date: Date?
     let city: String
     let temp: String
-    let unit: ForTemp
+    let unit: TempStandard
 }
 
-enum ForTemp {
-    case celcius
+enum TempStandard {
+    case celsius
     case fahrenheit
 }
 

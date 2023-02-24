@@ -83,9 +83,9 @@ private extension HistoryTableViewCell {
         сityLabel.text = name
     }
     
-    func setupDataTemp(temp: String, unit: ForTemp) {
+    func setupDataTemp(temp: String, unit: TempStandard) {
         switch unit {
-        case .celcius: tempLabel.text = temp + "° C"
+        case .celsius: tempLabel.text = temp + "° C"
         case .fahrenheit: tempLabel.text = temp + "° F"
         }
     }

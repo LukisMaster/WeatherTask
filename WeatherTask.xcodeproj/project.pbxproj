@@ -94,6 +94,7 @@
 		2D19F5EA29A408E9001A9CBD /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				2DE442C729A82A8800A50C6B /* LocationManager.swift */,
 				2DE442C529A827AE00A50C6B /* CoreDataManager.swift */,
 				2DE442BB29A8178000A50C6B /* NetworkManager.swift */,
 				2DE442BF29A826E800A50C6B /* WeatherDataModel.xcdatamodeld */,
@@ -106,7 +107,6 @@
 			children = (
 				2D19F5F429A4155C001A9CBD /* WeatherResponse.swift */,
 				2DE442BD29A81CDE00A50C6B /* CityResponse.swift */,
-				2DE442C729A82A8800A50C6B /* LocationManager.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";

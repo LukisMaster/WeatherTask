@@ -14,6 +14,8 @@ struct WeatherHistoryData {
 final class WeatherPresenter {
     weak var view: WeatherViewInputProtocol!
     var interactor: WeatherInteractorInputProtocol!
+    
+    
 }
 
 
@@ -28,11 +30,11 @@ extension WeatherPresenter: WeatherViewOutputProtocol {
     }
     
     func didTemperatureStandardToggleSwitched(isEnable: Bool) {
-        //without interactor
+        interactor.changeTemperatureStandard(value: isEnable ? TempStandard.celsius : TempStandard.fahrenheit)
     }
     
     func didSearchBarButtonPressed(text: String) {
-        interactor.fetchCoordinates(by: text)
+        interactor.fetchWeather(by: text)
     }
     
     func viewDidLoad() {
@@ -44,7 +46,7 @@ extension WeatherPresenter: WeatherViewOutputProtocol {
 //    }
     
 //    func getCurrentWeather(for cityName: String) {
-//        interactor.fetchCoordinates(by: cityName) { [weak self] result in
+//        interactor.fetchWeather(by: cityName) { [weak self] result in
 //            guard let self = self else { return }
 //
 //            switch result {
@@ -58,16 +60,25 @@ extension WeatherPresenter: WeatherViewOutputProtocol {
 }
 // MARK: - WeatherInteractorOutputProtocol
 extension WeatherPresenter: WeatherInteractorOutputProtocol {
-    func receiveWeatherData(weatherData: WeatherHistoryData) {
-        <#code#>
+    
+    func temperatureStandardDidSet(with value: TempStandard, currentTemperatureCelsius: Int16) {
+        view.updateInfoViewWith(city: "", tempCelsius: Int(currentTemperatureCelsius), celsiusIsOn: value == .celsius ? true : false)
     }
     
-    func presentWeather(response: WeatherResponse) {
-        <#code#>
+    func weatherIsFetched(weather: WeatherResponse , currentTemperatureStandard: TempStandard) {
+        view.updateInfoViewWith(
+            city: weather.name ?? "",
+            tempCelsius: Int(weather.main?.temp ?? 0),
+            celsiusIsOn: currentTemperatureStandard == .celsius ? true : false
+        )
     }
     
-    func presentError(_ error: Error) {
-        <#code#>
+    func fetchingFail(with error: Error) {
+        print(error.localizedDescription)
+    }
+    
+    func historyIsFetched(history: [Weather]) {
+        
     }
     
     
@@ -78,7 +89,7 @@ extension WeatherPresenter: WeatherInteractorOutputProtocol {
                 date: weather.date,
                 city: weather.cityName ?? "No city data",
                 temp: String(weather.tempCelsius),
-                unit: .celcius
+                unit: .celsius
             )))
         }
         view.reloadHistory(for: section)
