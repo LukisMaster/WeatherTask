@@ -13,31 +13,39 @@ protocol WeatherInteractorInputProtocol: AnyObject {
     func fetchWeatherByLocation()
     func fetchWeather(by city: String)
     func fetchSearchHistory()
-    func changeTemperatureStandard(value: TempStandard)
+    func fetchStartInfoViewValues()
+    func changeTemperatureStandard(value: TemperatureUnits)
     func removeHistoryItem(at index: Int)
 }
 
 protocol WeatherInteractorOutputProtocol: AnyObject {
-    func weatherIsFetched(weather: WeatherResponse, currentTemperatureStandard: TempStandard)
     func fetchingFail(with error: Error)
-    func historyIsFetched(history: [Weather], tempStandard: TempStandard)
-    func temperatureStandardDidSet(with value: TempStandard, currentTemperatureCelsius: Int16)
+    func historyIsFetched(history: [Weather], tempStandard: TemperatureUnits)
+    func temperatureStandardDidSet(with value: TemperatureUnits, currentTemperatureCelsius: Int)
+    func startInfoViewValuesDidFetched(units: TemperatureUnits, city: String, temperatureCelsius: Int)
+    func newWeatherDidFetched(temp: Double, city: String, date: Date, units: TemperatureUnits)
 }
 
 final class WeatherInteractor {
     private let networkService: NetworkFetchWeather = NetworkManager.shared
     private let dataService = CoreDataManager.shared
     private let locationService = LocationManager.shared
-    
-    private var temperatureStandard : TempStandard = .celsius
-    private var currentTemperatureCelsius : Int16 = 0
-    
+    private let defaultsService = UserDefaultsManager.shared
+        
     weak var presenter: WeatherInteractorOutputProtocol!
 }
 
 // MARK: - WeatherInteractorInputProtocol
 
 extension WeatherInteractor: WeatherInteractorInputProtocol {
+    func fetchStartInfoViewValues() {
+        presenter.startInfoViewValuesDidFetched(
+            units: defaultsService.temperatureUnit,
+            city: defaultsService.cityInfoView,
+            temperatureCelsius: defaultsService.temperatureInfoView
+        )
+    }
+    
 
     func fetchWeatherByLocation() {
         guard let coordinate = LocationManager.shared.location?.coordinate else {
@@ -63,12 +71,12 @@ extension WeatherInteractor: WeatherInteractorInputProtocol {
     
     func fetchSearchHistory() {
         let history = dataService.fetchWeatherData()
-        presenter.historyIsFetched(history: history, tempStandard: temperatureStandard)
+        presenter.historyIsFetched(history: history, tempStandard: defaultsService.temperatureUnit)
     }
     
-    func changeTemperatureStandard(value: TempStandard) {
-        temperatureStandard = value
-        presenter.temperatureStandardDidSet(with: temperatureStandard, currentTemperatureCelsius: currentTemperatureCelsius)
+    func changeTemperatureStandard(value: TemperatureUnits) {
+        defaultsService.temperatureUnit = value
+        presenter.temperatureStandardDidSet(with: value, currentTemperatureCelsius: defaultsService.temperatureInfoView)
     }
     
     func removeHistoryItem(at index: Int) {
@@ -86,16 +94,23 @@ private extension WeatherInteractor {
             case .failure(let error):
                 self?.presenter.fetchingFail(with: error) // отправить алерт, либо ничего не делать
             case .success(let weatherResponse):
-                self?.currentTemperatureCelsius = Int16(weatherResponse.main?.temp ?? 0.0)
-                self?.presenter.weatherIsFetched(
-                    weather: weatherResponse,
-                    currentTemperatureStandard: self?.temperatureStandard ?? TempStandard.celsius
-                )
+                let date = Date()
+                self?.defaultsService.temperatureInfoView = Int(weatherResponse.main?.temp ?? 0.0)
+                self?.defaultsService.cityInfoView = weatherResponse.name ?? ""
+                
                 self?.dataService.insertWeatherData(
                     temperature: Int16(weatherResponse.main?.temp ?? Double.infinity),
-                    location: weatherResponse.name ?? ""
+                    location: weatherResponse.name ?? "",
+                    date: date
                 )
-                self?.fetchSearchHistory()
+                
+                self?.presenter.newWeatherDidFetched(
+                    temp: weatherResponse.main?.temp ?? 0.0,
+                    city: weatherResponse.name ?? "",
+                    date: date,
+                    units: self?.defaultsService.temperatureUnit ?? .celsius
+                )
+               // self?.fetchSearchHistory()
             }
         }
     }

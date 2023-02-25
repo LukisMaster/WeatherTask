@@ -46,6 +46,9 @@ class CoreDataManager {
     
     func fetchWeatherData() -> [Weather] {
         let request: NSFetchRequest<Weather> = Weather.fetchRequest()
+        let sortDescriptor = NSSortDescriptor(key: "date", ascending: false)
+        request.sortDescriptors = [sortDescriptor]
+
         do {
             let weathers = try viewContext.fetch(request)
             return weathers
@@ -57,11 +60,11 @@ class CoreDataManager {
     
     // MARK: - Insert Request
     
-    func insertWeatherData(temperature: Int16, location: String) {
+    func insertWeatherData(temperature: Int16, location: String, date: Date) {
         let weather = Weather(context: viewContext)
         weather.tempCelsius = temperature
         weather.cityName = location
-        weather.date = Date()
+        weather.date = date
         saveContext()
     }
     

@@ -23,9 +23,9 @@ final class HistoryCellViewModel : CellIdentifiable {
     let date: Date?
     let city: String
     let temp: String
-    let unit: TempStandard
+    let unit: TemperatureUnits
     
-    init(date: Date?, city: String, temp: String, unit: TempStandard) {
+    init(date: Date?, city: String, temp: String, unit: TemperatureUnits) {
         self.date = date
         self.city = city
         self.temp = temp

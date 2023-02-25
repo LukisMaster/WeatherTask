@@ -11,16 +11,5 @@ struct WeatherInfoModel {
     let date: Date?
     let city: String
     let temp: String
-    let unit: TempStandard
-}
-
-enum TempStandard {
-    case celsius
-    case fahrenheit
-}
-
-enum BackgroundHexColor: String {
-    case lightBlue = "#5ac8fa"
-    case lightOrange = "#FFD580"
-    case lightRed = "#FF6666"
+    let unit: TemperatureUnits
 }

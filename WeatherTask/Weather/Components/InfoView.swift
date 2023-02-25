@@ -119,9 +119,7 @@ private extension InfoView {
             fahrenheitLabel.centerYAnchor.constraint(equalTo: tempSwitch.centerYAnchor),
             fahrenheitLabel.rightAnchor.constraint(equalTo: tempSwitch.leftAnchor, constant: Constants.itemInset)
         ])
-        
-        backgroundColor = UIColor(hex: BackgroundHexColor.lightBlue.rawValue)
-        
+                
     }
     
     func configure() {

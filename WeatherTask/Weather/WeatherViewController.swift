@@ -12,6 +12,7 @@ protocol WeatherViewInputProtocol: AnyObject {
     // from presenter to view
     func reloadHistory(for section: SectionRowPresentable)
     func updateInfoViewWith(city: String, tempCelsius: Int, celsiusIsOn: Bool)
+    func insertRowInHistoryTable(cellViewModel: HistoryCellViewModel)
 }
 
 protocol WeatherViewOutputProtocol: PresenterProtocol {
@@ -19,7 +20,7 @@ protocol WeatherViewOutputProtocol: PresenterProtocol {
     func didTapCell(with cellViewModel: HistoryCellViewModel) // to future optional tasks
     func didLocationButtonPressed()
     func didTemperatureStandardToggleSwitched(isEnable: Bool)
-    func didSearchBarTextChanged(text: String)
+    func didSearchBarSend(text: String)
     func didHistoryCellDeleted(at index: Int)
 }
 
@@ -27,7 +28,6 @@ final class WeatherViewController: ViewController {
     
     var presenter: WeatherViewOutputProtocol!
     private var section: SectionRowPresentable?
-    private var timer: Timer?
     
     private lazy var infoView: InfoView = {
         let view = InfoView()
@@ -56,6 +56,13 @@ final class WeatherViewController: ViewController {
 
 // MARK: - WeatherViewInputProtocol
 extension WeatherViewController: WeatherViewInputProtocol {
+    func insertRowInHistoryTable(cellViewModel: HistoryCellViewModel) {
+        self.section?.rows.insert(cellViewModel, at: 0)
+        DispatchQueue.main.async {  [weak self] in
+            self?.historyTable.insertRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+        }
+    }
+    
     func updateInfoViewWith(city: String, tempCelsius: Int, celsiusIsOn: Bool) {
         infoView.update(from: InfoViewModel(city: city, tempCelsius: tempCelsius, celsiusIsOn: celsiusIsOn))
     }
@@ -168,12 +175,10 @@ extension WeatherViewController: UITableViewDelegate {
 
 // MARK: - UISearchBarDelegate
 extension WeatherViewController: UISearchBarDelegate {
-
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false, block: { [self] _ in
-            presenter.didSearchBarTextChanged(text: searchText)
-        })
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let searchText = searchBar.text else { return }
+        presenter.didSearchBarSend(text: searchText)
     }
 }
 

@@ -24,7 +24,8 @@ final class NetworkManager: NetworkFetchWeather {
     
     func fetchWeatherData(latitude: Double, longitude: Double, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
         
-        let urlString = "\(Constant.URLStringForFetchWeather)lat=\(latitude)&lon=\(longitude)&appid=\(Constant.apiKey)&units=\(Constant.units)"
+        let urlString = "\(Constant.URLStringForFetchWeather)lat=\(latitude)&lon=\(longitude)&appid=\(Constant.apiKey)&units=\(Constant.units)&lang=\(Constant.lang)"
+        
         guard let url = URL(string: urlString) else {
             completion(.failure(NetworkError.invalidURL))
             return
@@ -83,6 +84,7 @@ final class NetworkManager: NetworkFetchWeather {
         static let URLStringForFetchWeather = "https://api.openweathermap.org/data/2.5/weather?"
         static let URLStringForFetchCity = "https://api.openweathermap.org/geo/1.0/direct?"
         static let units = "metric"    // Celsius
+        static let lang = "en"
     }
 }
 

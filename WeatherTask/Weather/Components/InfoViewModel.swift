@@ -5,6 +5,11 @@
 //  Created by Sergey Nestroyniy on 23.02.2023.
 //
 
+enum BackgroundHexColor: String {
+    case lightBlue = "#5ac8fa"
+    case lightOrange = "#FFD580"
+    case lightRed = "#FF6666"
+}
 
 final class InfoViewModel {
     var backgroundHexColor: String
@@ -37,6 +42,7 @@ fileprivate func toCelsiusInt(temperature: String, celsiusIsOn: Bool) -> Int? {
 }
 
 fileprivate func getHexColor(from celsiusTemperature: Int?) -> String {
+    
     switch celsiusTemperature {
     case let temperature? where (..<10).contains(temperature):
         return  BackgroundHexColor.lightBlue.rawValue
