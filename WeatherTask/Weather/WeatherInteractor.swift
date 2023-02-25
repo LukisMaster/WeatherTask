@@ -110,7 +110,6 @@ private extension WeatherInteractor {
                     date: date,
                     units: self?.defaultsService.temperatureUnit ?? .celsius
                 )
-               // self?.fetchSearchHistory()
             }
         }
     }
