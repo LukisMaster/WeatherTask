@@ -14,12 +14,13 @@ protocol WeatherInteractorInputProtocol: AnyObject {
     func fetchWeather(by city: String)
     func fetchSearchHistory()
     func changeTemperatureStandard(value: TempStandard)
+    func removeHistoryItem(at index: Int)
 }
 
 protocol WeatherInteractorOutputProtocol: AnyObject {
     func weatherIsFetched(weather: WeatherResponse, currentTemperatureStandard: TempStandard)
     func fetchingFail(with error: Error)
-    func historyIsFetched(history: [Weather])
+    func historyIsFetched(history: [Weather], tempStandard: TempStandard)
     func temperatureStandardDidSet(with value: TempStandard, currentTemperatureCelsius: Int16)
 }
 
@@ -62,12 +63,16 @@ extension WeatherInteractor: WeatherInteractorInputProtocol {
     
     func fetchSearchHistory() {
         let history = dataService.fetchWeatherData()
-        presenter.historyIsFetched(history: history)
+        presenter.historyIsFetched(history: history, tempStandard: temperatureStandard)
     }
     
     func changeTemperatureStandard(value: TempStandard) {
         temperatureStandard = value
         presenter.temperatureStandardDidSet(with: temperatureStandard, currentTemperatureCelsius: currentTemperatureCelsius)
+    }
+    
+    func removeHistoryItem(at index: Int) {
+        dataService.deleteWeatherData(at: index)
     }
 }
 
@@ -86,6 +91,11 @@ private extension WeatherInteractor {
                     weather: weatherResponse,
                     currentTemperatureStandard: self?.temperatureStandard ?? TempStandard.celsius
                 )
+                self?.dataService.insertWeatherData(
+                    temperature: Int16(weatherResponse.main?.temp ?? Double.infinity),
+                    location: weatherResponse.name ?? ""
+                )
+                self?.fetchSearchHistory()
             }
         }
     }

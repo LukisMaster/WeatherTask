@@ -64,4 +64,11 @@ class CoreDataManager {
         weather.date = Date()
         saveContext()
     }
+    
+    func deleteWeatherData(at index: Int) {
+        let items = fetchWeatherData()
+        guard !items.isEmpty else { return }
+        viewContext.delete(items[index])
+        saveContext()
+    }
 }

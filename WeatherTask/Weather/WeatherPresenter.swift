@@ -21,6 +21,10 @@ final class WeatherPresenter {
 
 // MARK: - WeatherViewOutputProtocol
 extension WeatherPresenter: WeatherViewOutputProtocol {
+    func didHistoryCellDeleted(at index: Int) {
+        interactor.removeHistoryItem(at: index)
+    }
+    
     func didTapCell(with cellViewModel: HistoryCellViewModel) {
         //without interactor
     }
@@ -41,22 +45,6 @@ extension WeatherPresenter: WeatherViewOutputProtocol {
         interactor.fetchSearchHistory()
     }
     
-//    func viewDidLoad() {
-////        interactor.fetchSearchHistory()
-//    }
-    
-//    func getCurrentWeather(for cityName: String) {
-//        interactor.fetchWeather(by: cityName) { [weak self] result in
-//            guard let self = self else { return }
-//
-//            switch result {
-//            case .success(let weatherResponse):
-//                self.presentWeather(response: weatherResponse)
-//            case .failure(let error):
-//                self.presentError(error)
-//            }
-//        }
-//    }
 }
 // MARK: - WeatherInteractorOutputProtocol
 extension WeatherPresenter: WeatherInteractorOutputProtocol {
@@ -77,23 +65,20 @@ extension WeatherPresenter: WeatherInteractorOutputProtocol {
         print(error.localizedDescription)
     }
     
-    func historyIsFetched(history: [Weather]) {
-        
-    }
-    
-    
-    func weatherHistoryDidReceive(weatherHistory: [Weather]) {
-        let section = HistorySectionViewModel()
-        weatherHistory.forEach { weather in
-            section.rows.append(HistoryCellViewModel(model: WeatherInfoModel(
+    func historyIsFetched(history: [Weather], tempStandard: TempStandard) {
+        let rows = history.map { weather in
+            let temp = tempStandard == .celsius ? weather.tempCelsius : (weather.tempCelsius).celsiusConvertToFahrenheit()
+            return HistoryCellViewModel(
                 date: weather.date,
-                city: weather.cityName ?? "No city data",
-                temp: String(weather.tempCelsius),
-                unit: .celsius
-            )))
+                city: weather.cityName ?? "Empty city",
+                temp: String(", \(temp)"),
+                unit: tempStandard
+            )
+            
         }
-        view.reloadHistory(for: section)
+        view.reloadHistory(for: HistorySectionViewModel(rows: rows))
     }
+
 }
 
 

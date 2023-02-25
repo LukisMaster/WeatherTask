@@ -13,7 +13,7 @@ final class InfoViewModel {
     var celsiusIsOn: Bool
     
     init(city: String, tempCelsius: Int, celsiusIsOn: Bool) {
-        let temperature = celsiusIsOn ? tempCelsius : celsiusConvertToFahrenheit(tempCelsius)
+        let temperature = celsiusIsOn ? tempCelsius : tempCelsius.celsiusConvertToFahrenheit()
         self.city = city
         self.temp = String(temperature)
         self.celsiusIsOn = celsiusIsOn
@@ -30,13 +30,10 @@ final class InfoViewModel {
 }
 
  // MARK: - fileprivate funcs for inits
-fileprivate func celsiusConvertToFahrenheit(_ celsius: Int) -> Int {
-    (celsius * 9 / 5) + 32
-}
 
 fileprivate func toCelsiusInt(temperature: String, celsiusIsOn: Bool) -> Int? {
     guard let temperature = Int(temperature) else { return nil }
-    return celsiusIsOn ? temperature : celsiusConvertToFahrenheit(temperature)
+    return celsiusIsOn ? temperature : temperature.celsiusConvertToFahrenheit()
 }
 
 fileprivate func getHexColor(from celsiusTemperature: Int?) -> String {

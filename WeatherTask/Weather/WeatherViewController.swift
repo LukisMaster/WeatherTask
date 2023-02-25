@@ -12,7 +12,7 @@ import Foundation
 
 protocol WeatherViewInputProtocol: AnyObject {
     // from presenter to view
-    func reloadHistory(for: SectionRowPresentable)
+    func reloadHistory(for section: SectionRowPresentable)
     func updateInfoViewWith(city: String, tempCelsius: Int, celsiusIsOn: Bool)
 }
 
@@ -22,12 +22,13 @@ protocol WeatherViewOutputProtocol: PresenterProtocol {
     func didLocationButtonPressed()
     func didTemperatureStandardToggleSwitched(isEnable: Bool)
     func didSearchBarTextChanged(text: String)
+    func didHistoryCellDeleted(at index: Int)
 }
 
 final class WeatherViewController: ViewController {
     
     var presenter: WeatherViewOutputProtocol!
-    private var section: SectionRowPresentable = HistorySectionViewModel()
+    private var section: SectionRowPresentable?
     private var timer: Timer?
     
     private lazy var infoView: InfoView = {
@@ -61,8 +62,11 @@ extension WeatherViewController: WeatherViewInputProtocol {
         infoView.update(from: InfoViewModel(city: city, tempCelsius: tempCelsius, celsiusIsOn: celsiusIsOn))
     }
     
-    func reloadHistory(for: SectionRowPresentable) {
-        //
+    func reloadHistory(for section: SectionRowPresentable) {
+        self.section = section
+        DispatchQueue.main.async {  [weak self] in
+            self?.historyTable.reloadData()
+        }
     }
 }
 
@@ -127,11 +131,11 @@ private extension WeatherViewController {
 extension WeatherViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        self.section.rows.count
+        self.section?.rows.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let viewModel = section.rows[safe: indexPath.item] else {
+        guard let viewModel = section?.rows[safe: indexPath.item] else {
             return UITableViewCell()
         }
         let cell = historyTable.dequeueReusableCell(withIdentifier: viewModel.cellIdentifier, for: indexPath) as! HistoryTableViewCell
@@ -145,8 +149,20 @@ extension WeatherViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        guard let cellViewModel = section.rows[indexPath.row] as? HistoryCellViewModel else { return }
+        guard let cellViewModel = section?.rows[indexPath.row] as? HistoryCellViewModel else { return }
         presenter.didTapCell(with: cellViewModel)
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            section?.rows.remove(at: indexPath.row)
+            presenter.didHistoryCellDeleted(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+        }
     }
     
 }
@@ -165,10 +181,6 @@ extension WeatherViewController: UISearchBarDelegate {
 
 // MARK: - InfoViewDelegate
 extension WeatherViewController: InfoViewDelegate {
-    func updateData(viewModel: InfoViewModel) {
-        //
-    }
-    
     func switchValueChanged(temperatureStandardSwitchIsOn: Bool) {
         presenter.didTemperatureStandardToggleSwitched(isEnable: temperatureStandardSwitchIsOn)
     }

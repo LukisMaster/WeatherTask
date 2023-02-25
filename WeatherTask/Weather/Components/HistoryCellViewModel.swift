@@ -25,6 +25,13 @@ final class HistoryCellViewModel : CellIdentifiable {
     let temp: String
     let unit: TempStandard
     
+    init(date: Date?, city: String, temp: String, unit: TempStandard) {
+        self.date = date
+        self.city = city
+        self.temp = temp
+        self.unit = unit
+    }
+    
     init(model: WeatherInfoModel) {
         date = model.date
         city = model.city
@@ -36,4 +43,8 @@ final class HistoryCellViewModel : CellIdentifiable {
 
 final class HistorySectionViewModel: SectionRowPresentable {
     var rows: [CellIdentifiable] = []
+    
+    init(rows: [HistoryCellViewModel]) {
+        self.rows = rows
+    }
 }

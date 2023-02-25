@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 extension UITableView {
     func subscribe(_ object: (UITableViewDelegate
                               & UITableViewDataSource)) {
