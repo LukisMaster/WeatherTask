@@ -26,7 +26,7 @@ extension WeatherPresenter: WeatherViewOutputProtocol {
     }
     
     func didTapCell(with cellViewModel: HistoryCellViewModel) {
-        //without interactor
+        // for future optional tasks
     }
     
     func didLocationButtonPressed() {
@@ -35,6 +35,7 @@ extension WeatherPresenter: WeatherViewOutputProtocol {
     
     func didTemperatureStandardToggleSwitched(isEnable: Bool) {
         interactor.changeTemperatureStandard(value: isEnable ? TempStandard.celsius : TempStandard.fahrenheit)
+        interactor.fetchSearchHistory()
     }
     
     func didSearchBarTextChanged(text: String) {
@@ -67,7 +68,7 @@ extension WeatherPresenter: WeatherInteractorOutputProtocol {
     
     func historyIsFetched(history: [Weather], tempStandard: TempStandard) {
         let rows = history.map { weather in
-            let temp = tempStandard == .celsius ? weather.tempCelsius : (weather.tempCelsius).celsiusConvertToFahrenheit()
+            let temp = tempStandard == .celsius ? weather.tempCelsius : weather.tempCelsius.celsiusConvertToFahrenheit()
             return HistoryCellViewModel(
                 date: weather.date,
                 city: weather.cityName ?? "Empty city",

@@ -64,6 +64,7 @@ class InfoView: UIView {
     
     private lazy var tempSwitch: UISwitch = {
         let tempSwitch = UISwitch()
+        tempSwitch.isOn = true
         tempSwitch.translatesAutoresizingMaskIntoConstraints = false
         tempSwitch.addTarget(self, action: #selector(didTapSwitch), for: .touchUpInside)
         tempSwitch.onTintColor = .clear
@@ -118,6 +119,8 @@ private extension InfoView {
             fahrenheitLabel.centerYAnchor.constraint(equalTo: tempSwitch.centerYAnchor),
             fahrenheitLabel.rightAnchor.constraint(equalTo: tempSwitch.leftAnchor, constant: Constants.itemInset)
         ])
+        
+        backgroundColor = UIColor(hex: BackgroundHexColor.lightBlue.rawValue)
         
     }
     

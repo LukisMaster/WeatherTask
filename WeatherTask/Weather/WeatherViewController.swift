@@ -8,8 +8,6 @@
 import UIKit
 import Foundation
 
-
-
 protocol WeatherViewInputProtocol: AnyObject {
     // from presenter to view
     func reloadHistory(for section: SectionRowPresentable)
@@ -18,7 +16,7 @@ protocol WeatherViewInputProtocol: AnyObject {
 
 protocol WeatherViewOutputProtocol: PresenterProtocol {
     // from view to presenter
-    func didTapCell(with cellViewModel: HistoryCellViewModel)
+    func didTapCell(with cellViewModel: HistoryCellViewModel) // to future optional tasks
     func didLocationButtonPressed()
     func didTemperatureStandardToggleSwitched(isEnable: Bool)
     func didSearchBarTextChanged(text: String)
